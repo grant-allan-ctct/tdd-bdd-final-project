@@ -101,6 +101,19 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(new_product.available, product.available)
         self.assertEqual(new_product.category, product.category)
 
-    #
-    # ADD YOUR TEST CASES HERE
-    #
+    def test_read_a_product(self):
+        """It should Read the details from a product in the database"""
+        test_product = ProductFactory()
+        logging.debug("Test Product: %s", test_product.serialize())
+        test_product.id = None
+        test_product.create()
+        self.assertIsNotNone(test_product.id)
+        # Check reading all the fields of the item in the database:
+        found_product = Product.find(test_product.id)
+        self.assertEqual(found_product.id, test_product.id)  # sanity check
+        self.assertEqual(found_product.name, test_product.name)
+        self.assertEqual(found_product.description, test_product.description)
+        self.assertEqual(Decimal(found_product.price), test_product.price)
+        self.assertEqual(found_product.available, test_product.available)
+        self.assertEqual(found_product.category, test_product.category)
+
