@@ -140,4 +140,14 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(updated_product.id, id_after_creation)
         self.assertEqual(updated_product.description, UPDATED_DESCRIPTION)
 
+    def test_delete_a_product(self):
+        """It should Delete a product from the database"""
+        test_product = ProductFactory()
+        test_product.create()
+        products_before_deletion = Product.all()
+        self.assertEqual(len(products_before_deletion), 1)
+        # Delete it and check that it's gone:
+        test_product.delete()
+        products_after_deletion = Product.all()
+        self.assertEqual(len(products_after_deletion), 0)
 
