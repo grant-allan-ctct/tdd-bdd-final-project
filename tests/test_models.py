@@ -27,7 +27,7 @@ import os
 import logging
 import unittest
 from decimal import Decimal
-from service.models import Product, Category, db
+from service.models import Product, Category, db, DataValidationError
 from service import app
 from tests.factories import ProductFactory
 
@@ -127,18 +127,18 @@ class TestProductModel(unittest.TestCase):
         self.assertIsNotNone(id_after_creation)
         logging.debug("Test Product in the database: %s", test_product.serialize())
         # Now we will update the description:
-        UPDATED_DESCRIPTION = "updated description"
-        test_product.description = UPDATED_DESCRIPTION
+        updated_description = "updated description"
+        test_product.description = updated_description
         test_product.update()
         # Updating the product should not change its ID
         self.assertEqual(test_product.id, id_after_creation)
-        self.assertEqual(test_product.description, UPDATED_DESCRIPTION)
+        self.assertEqual(test_product.description, updated_description)
         # Check that the changes made it into the database too:
         products = Product.all()
         self.assertEqual(len(products), 1)
         updated_product = products[0]
         self.assertEqual(updated_product.id, id_after_creation)
-        self.assertEqual(updated_product.description, UPDATED_DESCRIPTION)
+        self.assertEqual(updated_product.description, updated_description)
 
     def test_delete_a_product(self):
         """It should Delete a product from the database"""
@@ -155,17 +155,17 @@ class TestProductModel(unittest.TestCase):
         """It should List all the products in the database"""
         all_products_initially = Product.all()
         self.assertEqual(len(all_products_initially), 0)
-        NUMBER_OF_PRODUCTS_TO_CREATE = 5
-        for _ in range(NUMBER_OF_PRODUCTS_TO_CREATE):
+        number_of_products_to_create = 5
+        for _ in range(number_of_products_to_create):
             product = ProductFactory()
             product.create()
         all_products_finally = Product.all()
-        self.assertEqual(len(all_products_finally), NUMBER_OF_PRODUCTS_TO_CREATE)
+        self.assertEqual(len(all_products_finally), number_of_products_to_create)
 
     def test_find_by_name(self):
         """It should Find all the products with a given name"""
-        NUMBER_OF_PRODUCTS_TO_CREATE = 5
-        all_products = ProductFactory.create_batch(NUMBER_OF_PRODUCTS_TO_CREATE)
+        number_of_products_to_create = 5
+        all_products = ProductFactory.create_batch(number_of_products_to_create)
         for product in all_products:
             product.create()
         name_to_find = all_products[0].name
@@ -177,8 +177,8 @@ class TestProductModel(unittest.TestCase):
 
     def test_find_by_availability(self):
         """It should Find all the products with a given availability"""
-        NUMBER_OF_PRODUCTS_TO_CREATE = 10
-        all_products = ProductFactory.create_batch(NUMBER_OF_PRODUCTS_TO_CREATE)
+        number_of_products_to_create = 10
+        all_products = ProductFactory.create_batch(number_of_products_to_create)
         for product in all_products:
             product.create()
         wanted_availability = all_products[0].available
@@ -190,8 +190,8 @@ class TestProductModel(unittest.TestCase):
 
     def test_find_by_category(self):
         """It should Find all the products within a given category"""
-        NUMBER_OF_PRODUCTS_TO_CREATE = 10
-        all_products = ProductFactory.create_batch(NUMBER_OF_PRODUCTS_TO_CREATE)
+        number_of_products_to_create = 10
+        all_products = ProductFactory.create_batch(number_of_products_to_create)
         for product in all_products:
             product.create()
         wanted_category = all_products[0].category
@@ -201,3 +201,43 @@ class TestProductModel(unittest.TestCase):
         for product in found_products:
             self.assertEqual(product.category, wanted_category)
 
+    def test_find_by_price(self):
+        """It should Find all the products within a given price"""
+        number_of_products_to_create = 10
+        all_products = ProductFactory.create_batch(number_of_products_to_create)
+        for product in all_products:
+            product.create()
+        wanted_price = all_products[0].price
+        how_many_to_find = len([product for product in all_products if product.price == wanted_price])
+        # Provide a string input to find_by_price to improve test coverage
+        found_products = Product.find_by_price(str(wanted_price))
+        self.assertEqual(found_products.count(), how_many_to_find)
+        for product in found_products:
+            self.assertEqual(product.price, wanted_price)
+
+    def test_serialize_and_deserialize_a_product(self):
+        """It should Serialize the Deserialize a product in the database"""
+        test_product = ProductFactory()
+        serialized_product = test_product.serialize()
+        reconstructed_product = ProductFactory()
+        reconstructed_product.deserialize(serialized_product)
+        # Note: the implementation of deserialize doesn't include the (primary key) ID:
+        self.assertEqual(reconstructed_product.name, test_product.name)
+        self.assertEqual(reconstructed_product.description, test_product.description)
+        self.assertEqual(reconstructed_product.price, test_product.price)
+        self.assertEqual(reconstructed_product.available, test_product.available)
+        self.assertEqual(reconstructed_product.category, test_product.category)
+
+    def test_deserialize_invalid_product(self):
+        """It should try to Deserialize using an invalid dictionary"""
+        reconstructed_product = ProductFactory()
+        self.assertRaises(DataValidationError, reconstructed_product.deserialize, {})
+
+    def test_update_a_product_with_no_id(self):
+        """It should try to Update a product's ID to None"""
+        test_product = ProductFactory()
+        test_product.create()
+        id_after_creation = test_product.id
+        self.assertIsNotNone(id_after_creation)
+        test_product.id = None
+        self.assertRaises(DataValidationError, test_product.update)
