@@ -188,3 +188,16 @@ class TestProductModel(unittest.TestCase):
         for product in found_products:
             self.assertEqual(product.available, wanted_availability)
 
+    def test_find_by_category(self):
+        """It should Find all the products within a given category"""
+        NUMBER_OF_PRODUCTS_TO_CREATE = 10
+        all_products = ProductFactory.create_batch(NUMBER_OF_PRODUCTS_TO_CREATE)
+        for product in all_products:
+            product.create()
+        wanted_category = all_products[0].category
+        how_many_to_find = len([product for product in all_products if product.category == wanted_category])
+        found_products = Product.find_by_category(wanted_category)
+        self.assertEqual(found_products.count(), how_many_to_find)
+        for product in found_products:
+            self.assertEqual(product.category, wanted_category)
+
