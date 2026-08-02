@@ -90,7 +90,7 @@ Scenario: Delete a Product
     And I press the "Delete" button
     Then I should see the message "Product has been Deleted!"
     When I press the "Clear" button
-    And I set the "Category" to "FOOD"
+    And I select "Food" in the "Category" dropdown
     And I press the "Search" button
     Then I should not see "Big Mac" in the results
 
@@ -107,7 +107,7 @@ Scenario: List all Products
 Scenario: Search by category
     When I visit the "Home Page"
     And I press the "Clear" button
-    And I set the "Category" to "FOOD"
+    And I select "Food" in the "Category" dropdown
     And I press the "Search" button
     Then I should see the message "Success"
     And I should see "Big Mac" in the results
@@ -118,7 +118,7 @@ Scenario: Search by category
 Scenario: Search by available
     When I visit the "Home Page"
     And I press the "Clear" button
-    And I set the "Available" dropdown to "True"
+    And I select "True" in the "Available" dropdown
     And I press the "Search" button
     Then I should see the message "Success"
     And I should see "Big Mac" in the results
