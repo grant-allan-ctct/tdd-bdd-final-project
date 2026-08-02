@@ -269,6 +269,21 @@ class TestProductRoutes(TestCase):
         for item in found_items:
             self.assertEqual(item["category"], test_category.name)
 
+    # ----------------------------------------------------------
+    # TEST LIST BY AVAILABILITY
+    # ----------------------------------------------------------
+    def test_query_by_availability(self):
+        """It should Get a list of all available Products"""
+        total_product_count = 10
+        products = self._create_products(total_product_count)
+        tally_expected = len([product for product in products if product.available is True])
+        response = self.client.get(BASE_URL, query_string="available=true")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        found_items = response.get_json()
+        self.assertEqual(len(found_items), tally_expected)
+        for item in found_items:
+            self.assertEqual(item["available"], True)
+
     ######################################################################
     # Utility functions
     ######################################################################

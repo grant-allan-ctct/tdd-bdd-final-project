@@ -101,6 +101,7 @@ def list_products():
     """
     wanted_name = request.args.get('name')
     wanted_category = request.args.get('category')
+    wanted_availability = request.args.get('available')
     if wanted_name is not None:
         app.logger.info(f"Request to retrieve products with name {jsonify(wanted_name)}")
         wanted_products = Product.find_by_name(wanted_name)
@@ -108,6 +109,11 @@ def list_products():
         app.logger.info(f"Request to retrieve products in category {wanted_category}")
         category_enum = getattr(Category, wanted_category.upper())
         wanted_products = Product.find_by_category(category_enum)
+    elif wanted_availability is not None:
+        availability_bool = wanted_availability.lower() in ["true", "yes", "1", "t", "y"]
+        availability_string = "available" if availability_bool else "unavailable"
+        app.logger.info(f"Request to retrieve all {availability_string} products")
+        wanted_products = Product.find_by_availability(availability_bool)
     else:
         app.logger.info("Request to retrieve all products")
         wanted_products = Product.all()
