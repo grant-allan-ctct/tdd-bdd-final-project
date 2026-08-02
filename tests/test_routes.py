@@ -235,7 +235,6 @@ class TestProductRoutes(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.get_json()), initial_product_count)
 
-
     # ----------------------------------------------------------
     # TEST LIST BY NAME
     # ----------------------------------------------------------
@@ -253,10 +252,27 @@ class TestProductRoutes(TestCase):
         for item in found_items:
             self.assertEqual(item["name"], test_name)
 
+    # ----------------------------------------------------------
+    # TEST LIST BY CATEGORY
+    # ----------------------------------------------------------
+    def test_query_by_category(self):
+        """It should Get a list of all the Products in the given category"""
+        total_product_count = 10
+        products = self._create_products(total_product_count)
+        test_category = products[0].category
+        tally_expected = len([product for product in products if product.category == test_category])
+        query = f"category={test_category.name}"
+        response = self.client.get(BASE_URL, query_string=query)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        found_items = response.get_json()
+        self.assertEqual(len(found_items), tally_expected)
+        for item in found_items:
+            self.assertEqual(item["category"], test_category.name)
 
     ######################################################################
     # Utility functions
     ######################################################################
+
     def get_product_count(self):
         """save the current number of products"""
         response = self.client.get(BASE_URL)
