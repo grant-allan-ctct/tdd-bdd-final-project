@@ -200,16 +200,43 @@ class TestProductRoutes(TestCase):
 
     def test_update_product_with_bad_id(self):
         """It should not Update information about a non-existent product"""
-        # No products have been created at all
+        # No products have been created at all, so we can choose any ID we want:
         test_product = ProductFactory()
         response = self.client.put(f"{BASE_URL}/1", json=test_product.serialize())
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    # ----------------------------------------------------------
+    # TEST DELETE
+    # ----------------------------------------------------------
+    def test_delete_product(self):
+        """It should Delete a product"""
+        initial_product_count = 5
+        products = self._create_products(initial_product_count)
+        self.assertEqual(self.get_product_count(), initial_product_count)
+        test_product = products[0]
+        victim_id = test_product.id
+        response = self.client.delete(f"{BASE_URL}/{victim_id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        # response data should be empty:
+        self.assertEqual(len(response.data), 0)
+        response = self.client.get(f"{BASE_URL}/{victim_id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.get_product_count(), initial_product_count - 1)
+
+    # ----------------------------------------------------------
+    # TEST LIST ALL
+    # ----------------------------------------------------------
+    def test_get_product_list(self):
+        """It should Get a list of all the Products"""
+        initial_product_count = 5
+        self._create_products(initial_product_count)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.get_json()), initial_product_count)
 
     ######################################################################
     # Utility functions
     ######################################################################
-
     def get_product_count(self):
         """save the current number of products"""
         response = self.client.get(BASE_URL)

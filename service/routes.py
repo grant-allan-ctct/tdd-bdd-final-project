@@ -94,9 +94,17 @@ def create_products():
 # L I S T   A L L   P R O D U C T S
 ######################################################################
 
-#
-# PLACE YOUR CODE TO LIST ALL PRODUCTS HERE
-#
+@app.route("/products", methods=["GET"])
+def list_products():
+    """
+    Retrieves a list of all the products
+    """
+    app.logger.info("Request to retrieve all products")
+    all_products = Product.all()
+    the_list = [product.serialize() for product in all_products]
+    app.logger.info(f"Sending back {len(the_list)} products")
+    return jsonify(the_list), status.HTTP_200_OK
+
 
 ######################################################################
 # R E A D   A   P R O D U C T
@@ -105,7 +113,7 @@ def create_products():
 @app.route("/products/<int:product_id>", methods=["GET"])
 def get_products(product_id):  # I would rather call it `get_product`.
     """
-    Retrieves a single product 
+    Retrieves a single product
     This endpoint will find the product with the given ID
     """
     app.logger.info(f"Request to retrieve a Product with ID {product_id}")
@@ -123,7 +131,7 @@ def get_products(product_id):  # I would rather call it `get_product`.
 @app.route("/products/<int:product_id>", methods=["PUT"])
 def update_products(product_id):
     """
-    Update an Product
+    Update a Product
     This endpoint will update the product with the given ID, based on the body given
     """
     app.logger.info("Request to update Product with ID [%s]", product_id)
@@ -146,7 +154,16 @@ def update_products(product_id):
 # D E L E T E   A   P R O D U C T
 ######################################################################
 
-
-#
-# PLACE YOUR CODE TO DELETE A PRODUCT HERE
-#
+@app.route("/products/<int:product_id>", methods=["DELETE"])
+def delete_product(product_id):
+    """
+    Delete a Product
+    This endpoint will delete the product with the given ID
+    """
+    app.logger.info(f"Request to delete Product with ID {product_id}")
+    our_victim = Product.find(product_id)
+    if our_victim:
+        our_victim.delete()
+    else:
+        app.logger.info(f"Product with ID {product_id} was not found")
+    return "", status.HTTP_204_NO_CONTENT
