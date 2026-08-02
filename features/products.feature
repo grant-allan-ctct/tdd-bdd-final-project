@@ -75,4 +75,62 @@ Scenario: Update a Product
     And I set the "Name" to "Shoes"
     And I press the "Search" button
     Then I should see the message "Success"
-    And I should see "140.00" in the "Price" fieldon
+    And I should see "140.00" in the results
+    And I should not see "120.50" in the results
+
+Scenario: Delete a Product
+    When I visit the "Home Page"
+    And I set the "Name" to "Big Mac"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "FOOD" in the "Category" field
+    When I copy the "Id" field
+    And I press the "Clear" button
+    When I paste the "Id" field
+    And I press the "Delete" button
+    Then I should see the message "Product has been Deleted!"
+    When I press the "Clear" button
+    And I set the "Category" to "FOOD"
+    And I press the "Search" button
+    Then I should not see "Big Mac" in the results
+
+Scenario: List all Products
+    When I visit the "Home Page"
+    And I press the "Clear" button
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "Hat" in the results
+    And I should see "Shoes" in the results
+    And I should see "Big Mac" in the results
+    And I should see "Sheets" in the results
+
+Scenario: Search by category
+    When I visit the "Home Page"
+    And I press the "Clear" button
+    And I set the "Category" to "FOOD"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "Big Mac" in the results
+    And I should not see "Hat" in the results
+    And I should not see "Shoes" in the results
+    And I should not see "Sheets" in the results
+
+Scenario: Search by available
+    When I visit the "Home Page"
+    And I press the "Clear" button
+    And I set the "Available" dropdown to "True"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "Big Mac" in the results
+    And I should see "Hat" in the results
+    And I should not see "Shoes" in the results
+    And I should see "Sheets" in the results
+
+Scenario: Search by name
+    When I visit the "Home Page"
+    And I press the "Clear" button
+    And I set the "Name" to "Sheets"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "Sheets" in the "Name" field
+    And I should see "Full bed sheets" in the "Description" field
