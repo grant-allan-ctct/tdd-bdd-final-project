@@ -97,10 +97,16 @@ def create_products():
 @app.route("/products", methods=["GET"])
 def list_products():
     """
-    Retrieves a list of all the products
+    Retrieves a list of all the products, or all which match provided criteria:
     """
-    app.logger.info("Request to retrieve all products")
-    all_products = Product.all()
+    wanted_name = request.args.get('name')
+    if wanted_name is not None:
+        app.logger.info(f"Request to retrieve products with name {jsonify(wanted_name)}")
+        wanted_products = Product.find_by_name(wanted_name)
+    else:
+        app.logger.info("Request to retrieve all products")
+        wanted_products = Product.all()
+
     the_list = [product.serialize() for product in all_products]
     app.logger.info(f"Sending back {len(the_list)} products")
     return jsonify(the_list), status.HTTP_200_OK
