@@ -224,6 +224,11 @@ class TestProductRoutes(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(self.get_product_count(), initial_product_count - 1)
 
+    def test_delete_all_disallowed(self):
+        """It should not Delete all of the products"""
+        response = self.client.delete(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
     # ----------------------------------------------------------
     # TEST LIST ALL
     # ----------------------------------------------------------
